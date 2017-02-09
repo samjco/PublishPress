@@ -1,6 +1,7 @@
-sudo: true
+sudo: required
 
-service: docker
+services:
+    - docker
 
 language: php
 
