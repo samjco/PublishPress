@@ -28,7 +28,7 @@
  * along with PublishPress.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-$_tests_dir = '/tmp/wordpress/tests/phpunit';
+$_tests_dir = '/var/www/tests/phpunit';
 
 require_once $_tests_dir . '/includes/functions.php';
 

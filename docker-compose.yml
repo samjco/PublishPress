@@ -1,0 +1,31 @@
+version: '2.1'
+
+services:
+    wp:
+        image: ostraining/phpfarm-wordpress-tests:${WP_VERSION:-4.7}
+        ports:
+            - 8053:8053
+            - 8054:8054
+            - 8055:8055
+            - 8056:8056
+            - 8070:8070
+            - 8071:8071
+        volumes:
+            - .:/plugin
+            - ./src:/var/www/src/wp-content/plugins/publishpress
+        environment:
+            PHP_VERSION: ${PHP_VERSION:-7.0}
+            DB_NAME: wordpress_tests
+            DB_USER: wordpress
+            DB_PASSWORD: wordpress
+        links:
+            - db
+        command: sh tests.sh
+    db:
+        image: mysql
+        restart: always
+        environment:
+             MYSQL_ROOT_PASSWORD: wordpress
+             MYSQL_DATABASE: wordpress_tests
+             MYSQL_USER: wordpress
+             MYSQL_PASSWORD: wordpress
