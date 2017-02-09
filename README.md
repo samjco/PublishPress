@@ -17,21 +17,21 @@ The sources files are named with the extension JSX. Which is optional on React, 
 
 You can install Babel on your environment following its documentation. But here we will describe how to use a Docker container for that.
 
-```
-$ docker run -it --rm -v `pwd`:/app ostraining/node-babel:latest bash
-```
+    $ docker run -it --rm -v `pwd`:/app ostraining/node-babel:latest bash
 
 **To compile one file**
 
-```
-# babel src/modules/efmigration/lib/babel/efmigration.jsx --out-file src/modules/efmigration/lib/js/efmigration.js
-```
+    # babel src/modules/efmigration/lib/babel/efmigration.jsx --out-file src/modules/efmigration/lib/js/efmigration.js
 
 **To watch a folder automatically compile changed files**
 
-```
-# babel -w src/modules/efmigration/lib/babel -d src/modules/efmigration/lib/js
-```
+    # babel -w src/modules/efmigration/lib/babel -d src/modules/efmigration/lib/js
+
+### Tests
+
+Requirements: Docker and Docker Compose
+
+    export PHP_VERSION=7.0 && export WP_VERSION=4.7 && docker-compose up --abort-on-container-exit
 
 ## License
 

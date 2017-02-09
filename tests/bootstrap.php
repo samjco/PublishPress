@@ -27,7 +27,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PublishPress.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 $_tests_dir = '/var/www/tests/phpunit';
 
 require_once $_tests_dir . '/includes/functions.php';

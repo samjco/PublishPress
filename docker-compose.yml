@@ -1,6 +1,15 @@
 version: '2.1'
 
 services:
+    db:
+        image: mysql:5.6
+        restart: always
+        environment:
+             MYSQL_ROOT_PASSWORD: wordpress
+             MYSQL_DATABASE: wordpress
+             MYSQL_USER: wordpress
+             MYSQL_PASSWORD: wordpress
+
     wp:
         image: ostraining/phpfarm-wordpress-tests:${WP_VERSION:-4.7}
         ports:
@@ -15,17 +24,10 @@ services:
             - ./src:/var/www/src/wp-content/plugins/publishpress
         environment:
             PHP_VERSION: ${PHP_VERSION:-7.0}
-            DB_NAME: wordpress_tests
+            WP_VERSION: ${WP_VERSION:-4.7}
+            DB_NAME: wordpress
             DB_USER: wordpress
             DB_PASSWORD: wordpress
         links:
             - db
         command: sh tests.sh
-    db:
-        image: mysql
-        restart: always
-        environment:
-             MYSQL_ROOT_PASSWORD: wordpress
-             MYSQL_DATABASE: wordpress_tests
-             MYSQL_USER: wordpress
-             MYSQL_PASSWORD: wordpress

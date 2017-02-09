@@ -6,63 +6,33 @@ php:
     - "5.6"
 
 env:
-    - WP_VERSION=master WP_MULTISITE=0 #Current stable release
+    - WP_VERSION=4.7 WP_MULTISITE=0 #Current stable release
 
 matrix:
   include:
-    #   php  5.6
-    - php: "5.6"
-      env: WP_VERSION=master WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=master WP_MULTISITE=1
-    - php: "5.6"
-      env: WP_VERSION=4.7 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=4.7 WP_MULTISITE=1
-    - php: "5.6"
-      env: WP_VERSION=4.6 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=4.5 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=4.4 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=4.3 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=4.2 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=4.1 WP_MULTISITE=0
-    - php: "5.6"
-      env: WP_VERSION=4.0 WP_MULTISITE=0
-    - php: "5.5"
-      env: WP_VERSION=master WP_MULTISITE=0
-    - php: "5.4"
-      env: WP_VERSION=master WP_MULTISITE=0
-    - php: "5.3"
-      env: WP_VERSION=master WP_MULTISITE=0
-    - php: "7.0"
-      env: WP_VERSION=master WP_MULTISITE=0
-    - php: "7.0"
-      env: WP_VERSION=master WP_MULTISITE=1
-    - php: "hhvm"
-      env: WP_VERSION=master WP_MULTISITE=0
-    - php: "nightly"
-      env: WP_VERSION=master WP_MULTISITE=0
-  allow_failures:
-    - php: "hhvm"
-    - php: "nightly"
+    - env: WP_VERSION=4.7 PHP_VERSION=7.1
+    - env: WP_VERSION=4.7 PHP_VERSION=7.0
+    - env: WP_VERSION=4.7 PHP_VERSION=5.6
+    - env: WP_VERSION=4.7 PHP_VERSION=5.5
+    - env: WP_VERSION=4.7 PHP_VERSION=5.4
+    - env: WP_VERSION=4.7 PHP_VERSION=5.3
+    - env: WP_VERSION=4.6 PHP_VERSION=5.6
+    - env: WP_VERSION=4.5 PHP_VERSION=5.6
+    - env: WP_VERSION=4.4 PHP_VERSION=5.6
+    - env: WP_VERSION=4.3 PHP_VERSION=5.6
+    - env: WP_VERSION=4.2 PHP_VERSION=5.6
+    - env: WP_VERSION=4.1 PHP_VERSION=5.6
+    - env: WP_VERSION=4.0 PHP_VERSION=5.6
 
 before_script:
-    - export PLUGIN_SLUG=$(basename $(pwd))
-    - git clone --depth=1 --branch $WP_VERSION git://develop.git.wordpress.org/ /tmp/wordpress
-    - cd ..
-    - mv $PLUGIN_SLUG "/tmp/wordpress/src/wp-content/plugins/$PLUGIN_SLUG"
-    - cd /tmp/wordpress
-    - git checkout $WP_VERSION
-    - mysql -e "CREATE DATABASE wordpress_tests;" -uroot
-    - cp wp-tests-config-sample.php wp-tests-config.php
-    - sed -i "s/youremptytestdbnamehere/wordpress_tests/" wp-tests-config.php
-    - sed -i "s/yourusernamehere/travis/" wp-tests-config.php
-    - sed -i "s/yourpasswordhere//" wp-tests-config.php
-    - cd "/tmp/wordpress/src/wp-content/plugins/$PLUGIN_SLUG"
+    - docker pull ostraining/phpfarm-wordpress-tests:4.7
+    - docker pull ostraining/phpfarm-wordpress-tests:4.6
+    - docker pull ostraining/phpfarm-wordpress-tests:4.5
+    - docker pull ostraining/phpfarm-wordpress-tests:4.4
+    - docker pull ostraining/phpfarm-wordpress-tests:4.3
+    - docker pull ostraining/phpfarm-wordpress-tests:4.2
+    - docker pull ostraining/phpfarm-wordpress-tests:4.1
+    - docker pull ostraining/phpfarm-wordpress-tests:4.0
+    - docker pull mysql:5.6
 
-script: phpunit
+script: docker-compose up --abort-on-container-exit
