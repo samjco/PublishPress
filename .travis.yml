@@ -1,8 +1,8 @@
 sudo: true
 
-language: php
-
 service: docker
+
+language: php
 
 php:
     - "5.6"
