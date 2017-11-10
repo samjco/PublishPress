@@ -13,7 +13,7 @@ modules:
         - \Helper\Acceptance
     config:
         WPDb:
-            dsn: 'mysql:host=127.0.0.1:33062;dbname=wordpress'
+            dsn: 'mysql:host=127.0.0.1:33062;dbname=wordpress_tests'
             user: 'root'
             password: 'root'
             dump: 'tests/_data/dump.sql'

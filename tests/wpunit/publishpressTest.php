@@ -28,6 +28,7 @@ class publishpressTest extends \Codeception\TestCase\WPTestCase
     public function testGetInstanceReturnsCorrectClass()
     {
         $instance = publishpress::instance();
+        
         $this->assertInstanceOf('publishpress', $instance);
     }
 
