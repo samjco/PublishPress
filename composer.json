@@ -18,6 +18,7 @@
     ],
     "minimum-stability": "stable",
     "require-dev": {
+        "lucatume/wp-browser": "^1.21",
         "pressshack/wordpress-plugin-builder": "*",
         "consolidation/robo": "~1",
         "gettext/gettext": "^4.2"
