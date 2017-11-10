@@ -10,8 +10,8 @@ modules:
     config:
         WPLoader:
             wpRootFolder: "/Users/anderson/Volumes/wp_tests"
-            dbName: "wpTests"
-            dbHost: "mysql"
+            dbName: "wordpress"
+            dbHost: "127.0.0.1:33062"
             dbUser: "root"
             dbPassword: "root"
             tablePrefix: "wp_"
