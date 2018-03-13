@@ -41,6 +41,7 @@
 
 use PublishPress\Notifications\Traits\Dependency_Injector;
 use PublishPress\Notifications\Traits\PublishPress_Module;
+use PublishPress\Debug\DebuggerTrait;
 
 // Store the time the plugin started.
 if (!defined('PUBLISHPRESS_DEBUG_START_TIME')) {
@@ -52,7 +53,7 @@ require_once 'includes.php';
 // Core class
 class publishpress
 {
-    use Dependency_Injector, PublishPress_Module;
+    use Dependency_Injector, PublishPress_Module, DebuggerTrait;
 
     // Unique identified added as a prefix to all options
     /**
@@ -67,7 +68,7 @@ class publishpress
     /**
      * @var PublishPress\Debug\Engine
      */
-    protected $debugger;
+    protected $debugEngine;
 
     private function __construct()
     {
@@ -75,19 +76,19 @@ class publishpress
     }
 
     /**
-     * @param \PublishPress\Debug\Engine $debugger
+     * @param \PublishPress\Debug\Engine $debugEngine
      */
-    public function setDebugger(PublishPress\Debug\Engine $debugger)
+    public function setDebugEngine(PublishPress\Debug\Engine $debugEngine)
     {
-        $this->debugger = $debugger;
+        $this->debugEngine = $debugEngine;
     }
 
     /**
      * @return \PublishPress\Debug\Engine
      */
-    public function getDebugger()
+    public function getDebugEngine()
     {
-        return $this->debugger;
+        return $this->debugEngine;
     }
 
     /**
@@ -109,12 +110,12 @@ class publishpress
             global $publishpress;
             $publishpress = self::$instance;
 
-            // Start the debugger. If not disabled, it won't register anything.
+            // Start the debugEngine. If not disabled, it won't register anything.
             $logPath = apply_filters('publishpress_debug_log_path', get_temp_dir() . '/publishpress.debug.log');
-            $debugger = new PublishPress\Debug\Engine($logPath,PUBLISHPRESS_DEBUG_START_TIME);
-            $debugger->init();
+            $debugEngine = new PublishPress\Debug\Engine($logPath,PUBLISHPRESS_DEBUG_START_TIME);
+            $debugEngine->init();
 
-            $publishpress->setDebugger($debugger);
+            $publishpress->setDebugEngine($debugEngine);
         }
 
         return self::$instance;
@@ -204,9 +205,12 @@ class publishpress
         {
             if (isset($mod_data->options->enabled) && $mod_data->options->enabled == 'on')
             {
+                $this->log('Initializing module: %s', $mod_name);
                 $this->$mod_name->init();
             }
         }
+
+        $this->log('do_action pp_init');
 
         do_action('pp_init');
     }

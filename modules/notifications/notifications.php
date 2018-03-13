@@ -28,6 +28,8 @@
  * along with PublishPress.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+use PublishPress\Debug\DebuggerTrait;
+
 if (!defined('PP_NOTIFICATION_USE_CRON'))
 {
     define('PP_NOTIFICATION_USE_CRON', false);
@@ -41,6 +43,7 @@ if (!class_exists('PP_Notifications'))
      */
     class PP_Notifications extends PP_Module
     {
+        use DebuggerTrait;
 
         // Taxonomy name used to store users which will be notified for changes in the posts.
         public $notify_user_taxonomy = 'pp_notify_user';
@@ -57,7 +60,6 @@ if (!class_exists('PP_Notifications'))
          */
         public function __construct()
         {
-
             // Register the module with PublishPress
             $this->module_url = $this->get_module_url(__FILE__);
             $args             = array(
@@ -87,7 +89,8 @@ if (!class_exists('PP_Notifications'))
                 'settings_help_sidebar' => __('<p><strong>For more information:</strong></p><p><a href="https://publishpress.com/features/notifications/">Notifications Documentation</a></p><p><a href="https://github.com/ostraining/PublishPress">PublishPress on Github</a></p>', 'publishpress'),
                 'general_options'       => true,
             );
-            $this->module     = PublishPress()->register_module('notifications', $args);
+
+            $this->module = PublishPress()->register_module('notifications', $args);
         }
 
         /**
@@ -95,8 +98,6 @@ if (!class_exists('PP_Notifications'))
          */
         public function init()
         {
-            do_action('publishpress_debug_log', '[notifications]: initializing');
-
             // Register our taxonomies for managing relationships
             $this->register_taxonomies();
 
@@ -626,16 +627,41 @@ if (!class_exists('PP_Notifications'))
         {
             global $publishpress;
 
-
             // Kill switch for notification
             if (!apply_filters('pp_notification_status_change', $new_status, $old_status, $post) || !apply_filters("pp_notification_{$post->post_type}_status_change", $new_status, $old_status, $post))
             {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_status_change: killed (%s, %s, %s, %s)',
+                    [
+                        $old_status,
+                        $new_status,
+                        $post->ID,
+                        $post->post_type
+                    ]
+                );
+
                 return false;
             }
 
             $supported_post_types = $this->get_post_types_for_module($this->module);
             if (!in_array($post->post_type, $supported_post_types))
             {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_status_change: post type disabled (%s, %s, %s, %s)',
+                    [
+                        $old_status,
+                        $new_status,
+                        $post->ID,
+                        $post->post_type
+                    ]
+                );
+
                 return;
             }
 
@@ -644,13 +670,40 @@ if (!class_exists('PP_Notifications'))
 
             if (!in_array($new_status, $ignored_statuses))
             {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_status_change: doing action pp_send_notification_status_update (%s, %s, %s, %s)',
+                    [
+                        $old_status,
+                        $new_status,
+                        $post->ID,
+                        $post->post_type
+                    ]
+                );
+
                 $args = array(
                     'new_status' => $new_status,
                     'old_status' => $old_status,
                     'post'       => $post,
                 );
 
+                // Call the action to notify a status update.
                 do_action('pp_send_notification_status_update', $args);
+            } else {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_status_change: no need to notify. Ignored status (%s, %s, %s, %s)',
+                    [
+                        $old_status,
+                        $new_status,
+                        $post->ID,
+                        $post->post_type
+                    ]
+                );
             }
         }
 
@@ -664,16 +717,37 @@ if (!class_exists('PP_Notifications'))
             $supported_post_types = $this->get_post_types_for_module($this->module);
             if (!in_array($post->post_type, $supported_post_types))
             {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_comment: post type disabled, do nothing (%s, %s)',
+                    [
+                        $post->ID,
+                        $post->post_type
+                    ]
+                );
+
                 return;
             }
 
             // Kill switch for notification
             if (!apply_filters('pp_notification_editorial_comment', $comment, $post))
             {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_comment: killed (%s, %s)',
+                    [
+                        $post->ID,
+                        $post->post_type
+                    ]
+                );
+
                 return false;
             }
 
-            $user         = get_userdata($post->post_author);
             $current_user = wp_get_current_user();
 
             $post_id    = $post->ID;
@@ -687,13 +761,36 @@ if (!class_exists('PP_Notifications'))
             // Set user to be notified for a post, but make it filterable
             if (apply_filters('pp_notification_auto_subscribe_current_user', true, 'comment'))
             {
-                $this->post_set_users_to_notify($post, (int )$current_user->ID);
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_comment: auto subscribing current user (%s, %s)',
+                    [
+                        $post->ID,
+                        $post->post_type
+                    ]
+                );
+
+                $this->post_set_users_to_notify($post, (int)$current_user->ID);
             }
 
             // Set the post author to be notified for the post but make it filterable
             if (apply_filters('pp_notification_auto_subscribe_post_author', true, 'comment'))
             {
-                $this->post_set_users_to_notify($post, (int )$post->post_author);
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'notification_comment: auto subscribing post author (%s, %s, %s)',
+                    [
+                        $post->ID,
+                        $post->post_type,
+                        (int)$post->post_author
+                    ]
+                );
+
+                $this->post_set_users_to_notify($post, (int)$post->post_author);
             }
 
             $blogname = get_option('blogname');
@@ -707,6 +804,18 @@ if (!class_exists('PP_Notifications'))
                 'post_type'    => $post_type,
                 'current_user' => $current_user,
                 'comment'      => $comment,
+            );
+
+            /*
+             * Debug.
+             */
+            $this->log(
+                'notification_comment: doing action pp_send_notification_comment (%s, %s)',
+                [
+                    $post->ID,
+                    $post->post_type,
+                    (int)$post->post_author
+                ]
             );
 
             do_action('pp_send_notification_comment', $args);
@@ -732,6 +841,18 @@ if (!class_exists('PP_Notifications'))
         {
             if (is_null($recipients))
             {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'send_email: no receivers. Get users/roles who subscribed for the post (%s, %s, %s)',
+                    [
+                        $post->ID,
+                        $post->post_type,
+                        (int)$post->post_author
+                    ]
+                );
+
                 // Get list of email recipients -- set them CC
                 $recipients = $this->_get_notification_recipients($post, true);
             }
@@ -774,6 +895,19 @@ if (!class_exists('PP_Notifications'))
 
             foreach ($recipients as $recipient)
             {
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'schedule_emails: schedule the email (%s, %s, %s, %s)',
+                    [
+                        $subject,
+                        count($recipients),
+                        $time_offset,
+                        $send_time,
+                    ]
+                );
+
                 wp_schedule_single_event($send_time, 'pp_send_scheduled_notification', array($recipient, $subject, $message, $message_headers));
                 $send_time += $time_offset;
             }
@@ -789,6 +923,17 @@ if (!class_exists('PP_Notifications'))
          */
         public function send_single_email($to, $subject, $message, $message_headers = '')
         {
+            /*
+             * Debug.
+             */
+            $this->log(
+                'send_single_email: send email (%s, %s)',
+                [
+                    $subject,
+                    is_object($recipient) ? $recipient->user_email : $recipient,
+                ]
+            );
+
             wp_mail($to, $subject, $message, $message_headers);
         }
 
@@ -1227,7 +1372,7 @@ if (!class_exists('PP_Notifications'))
         {
             if (!$user)
             {
-                $user = (int )wp_get_current_user()->ID;
+                $user = (int)wp_get_current_user()->ID;
             }
 
             if (is_int($user))
@@ -1474,6 +1619,18 @@ if (!class_exists('PP_Notifications'))
             $old_status = $args['old_status'];
             $post       = $args['post'];
 
+            /*
+             * Debug.
+             */
+            $this->log(
+                'send_notification_status_update (%s, %s, %s)',
+                [
+                    $old_status,
+                    $new_status,
+                    $post->ID,
+                ]
+            );
+
             // Get current user
             $current_user = wp_get_current_user();
 
@@ -1589,6 +1746,18 @@ if (!class_exists('PP_Notifications'))
         {
             /* translators: 1: blog name, 2: post title */
             $subject = sprintf(__('[%1$s] New Editorial Comment: "%2$s"', 'publishpress'), $args['blogname'], $args['post_title']);
+
+            /*
+             * Debug.
+             */
+            $this->log(
+                'send_notification_comment (%s, %s, %s)',
+                [
+                    $args['post_id'],
+                    $args['post_type'],
+                    $subject,
+                ]
+            );
 
             /* translators: 1: post id, 2: post title, 3. post type */
             $body = sprintf(__('A new editorial comment was added to %3$s #%1$s "%2$s"', 'publishpress'), $args['post_id'], $args['post_title'], $args['post_type']) . "\r\n\r\n";

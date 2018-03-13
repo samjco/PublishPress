@@ -35,6 +35,7 @@ use PublishPress\Notifications\Workflow\Step\Event\Editorial_Comment as Event_Ed
 use PublishPress\Notifications\Workflow\Step\Event\Filter\Post_Status as Filter_Post_Status;
 use PublishPress\Notifications\Workflow\Step\Event\Post_Save as Event_Post_Save;
 use PublishPress\Notifications\Workflow\Step\Receiver\Site_Admin as Receiver_Site_Admin;
+use PublishPress\Debug\DebuggerTrait;
 
 if (!class_exists('PP_Improved_Notifications'))
 {
@@ -44,7 +45,7 @@ if (!class_exists('PP_Improved_Notifications'))
     class PP_Improved_Notifications extends PP_Module
     {
 
-        use Dependency_Injector, PublishPress_Module;
+        use Dependency_Injector, PublishPress_Module, DebuggerTrait;
 
         const SETTINGS_SLUG = 'pp-improved-notifications-settings';
 
@@ -149,8 +150,6 @@ if (!class_exists('PP_Improved_Notifications'))
          */
         public function init()
         {
-            do_action('publishpress_debug_log', '[improved-notifications]: initializing');
-
             add_action('admin_enqueue_scripts', array($this, 'add_admin_scripts'));
 
             // Workflow form
@@ -428,6 +427,19 @@ if (!class_exists('PP_Improved_Notifications'))
                 'old_status' => $old_status,
             ];
 
+            /*
+             * Debug.
+             */
+            $this->log(
+                'action_transition_post_status: doing action publishpress_notif_run_workflows (%s, %s, %s, %s)',
+                [
+                    $args['action'],
+                    $old_status,
+                    $new_status,
+                    $post->ID,
+                ]
+            );
+
             do_action('publishpress_notif_run_workflows', $args);
         }
 
@@ -448,6 +460,19 @@ if (!class_exists('PP_Improved_Notifications'))
                 'old_status' => $post->post_status,
                 'comment'    => $comment,
             ];
+
+            /*
+             * Debug.
+             */
+            $this->log(
+                'action_editorial_comment: doing action publishpress_notif_run_workflows (%s, %s, %s, %s)',
+                [
+                    $args['action'],
+                    $old_status,
+                    $new_status,
+                    $post->ID,
+                ]
+            );
 
             do_action('publishpress_notif_run_workflows', $args);
         }

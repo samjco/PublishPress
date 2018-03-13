@@ -9,8 +9,12 @@
 
 namespace PublishPress\Notifications\Workflow;
 
+use PublishPress\Debug\DebuggerTrait;
+
 class Controller
 {
+    use DebuggerTrait;
+
     /**
      * Store the signatures of sent notifications, usually to avoid duplicated notifications
      * to the same channel.
@@ -48,7 +52,37 @@ class Controller
      */
     public function run_workflows($args)
     {
+
         $workflows = $this->get_filtered_workflows($args);
+
+        if (empty($workflows)) {
+            /*
+             * Debug.
+             */
+            $this->log(
+                'run_workflows: no workflow found (%s, %s, %s)',
+                [
+                    $args['action'],
+                    $args['old_status'],
+                    $args['new_status'],
+                ]
+            );
+
+            return;
+        }
+
+        /*
+         * Debug.
+         */
+        $this->log(
+            'run_workflows: found %d (%s, %s, %s)',
+            [
+                count($workflows),
+                $args['action'],
+                $args['old_status'],
+                $args['new_status'],
+            ]
+        );
 
         foreach ($workflows as $workflow)
         {

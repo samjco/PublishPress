@@ -30,6 +30,7 @@
 
 use PublishPress\Core\Modules\AbstractModule;
 use PublishPress\Core\Modules\ModuleInterface;
+use PublishPress\Debug\DebuggerTrait;
 
 if (!class_exists('PP_Debug')) {
 
@@ -41,6 +42,8 @@ if (!class_exists('PP_Debug')) {
      */
     class PP_Debug extends AbstractModule implements ModuleInterface
     {
+        use DebuggerTrait;
+
         const SETTINGS_SLUG = 'pp-debug';
 
         public $module_name = 'debug';
@@ -51,7 +54,7 @@ if (!class_exists('PP_Debug')) {
 
         public $isInitialized = false;
 
-        protected $debugger;
+        protected $debugEngine;
 
         /**
          * Construct the PP_Debug class
@@ -76,8 +79,8 @@ if (!class_exists('PP_Debug')) {
 
             $publishpress = PublishPress();
 
-            $this->module   = $publishpress->register_module($this->module_name, $args);
-            $this->debugger = $publishpress->getDebugger();
+            $this->module      = $publishpress->register_module($this->module_name, $args);
+            $this->debugEngine = $publishpress->getDebugEngine();
 
             parent::__construct();
         }
@@ -90,11 +93,9 @@ if (!class_exists('PP_Debug')) {
             // Register our settings
             add_action('admin_init', [$this, 'register_settings']);
 
-            if ($this->debugger->isEnabled()) {
+            if ($this->debugEngine->isEnabled()) {
                 add_action('publishpress_admin_menu', [$this, 'action_admin_menu'], 30);
             }
-
-            do_action('publishpress_debug_log', '[debug]: initializing');
         }
 
         /**
@@ -115,7 +116,7 @@ if (!class_exists('PP_Debug')) {
         public function upgrade($previous_version)
         {
             if (version_compare($previous_version, '1.11', '<')) {
-                do_action('publishpress_debug_log', '[debug]: upgrading for < 1.11');
+                $this->log('[debug]: upgrading for < 1.11');
                 $this->setDefaultCapabilities();
             }
         }
@@ -132,7 +133,7 @@ if (!class_exists('PP_Debug')) {
             if (is_object($role)) {
                 $role->add_cap('manage_debug_entries');
 
-                do_action('publishpress_debug_log', '[debug]: setting default capabilities');
+                $this->log('[debug]: setting default capabilities');
             }
         }
 
@@ -220,12 +221,10 @@ if (!class_exists('PP_Debug')) {
 
             $publishpress->settings->print_default_header($publishpress->modules->debug);
 
-            $debugContent = $this->debugger->getLog();
+            $debugContent = $this->debugEngine->getLog();
 
             echo '<div class="wrap">';
-
             echo nl2br($debugContent);
-
             echo '</div>';
 
             $publishpress->settings->print_default_footer($publishpress->modules->debug);

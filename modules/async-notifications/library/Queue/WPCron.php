@@ -24,6 +24,7 @@
 namespace PublishPress\AsyncNotifications\Queue;
 
 use PublishPress\Notifications\Traits\Dependency_Injector;
+use PublishPress\Debug\DebuggerTrait;
 
 /**
  * Class DBAdapter
@@ -32,7 +33,7 @@ use PublishPress\Notifications\Traits\Dependency_Injector;
  */
 class WPCron implements QueueInterface
 {
-    use Dependency_Injector;
+    use Dependency_Injector, DebuggerTrait;
 
     /**
      * Enqueue the notification for async processing.
@@ -93,6 +94,21 @@ class WPCron implements QueueInterface
      */
     protected function scheduleEvent($data)
     {
+        /*
+         * Debug.
+         */
+        $this->log(
+            'scheduleEvent: enqueuing notification (%s, %s, %s, %s, %s, %s)',
+            [
+                $data[0],
+                $data[1],
+                $data[2],
+                $data[4],
+                $data[5],
+                $data[6],
+            ]
+        );
+
         wp_schedule_single_event(
             time(),
             'publishpress_cron_notify',

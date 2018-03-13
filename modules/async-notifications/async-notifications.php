@@ -31,6 +31,7 @@
 use PublishPress\Legacy\Auto_loader;
 use PublishPress\Notifications\Traits\Dependency_Injector;
 use PublishPress\Notifications\Traits\PublishPress_Module;
+use PublishPress\Debug\DebuggerTrait;
 
 if (!class_exists('PP_Async_Notifications'))
 {
@@ -39,7 +40,7 @@ if (!class_exists('PP_Async_Notifications'))
      */
     class PP_Async_Notifications extends PP_Module
     {
-        use Dependency_Injector, PublishPress_Module;
+        use Dependency_Injector, PublishPress_Module, DebuggerTrait;
 
         const SETTINGS_SLUG = 'pp-async-notifications-settings';
 
@@ -104,8 +105,6 @@ if (!class_exists('PP_Async_Notifications'))
          */
         public function init()
         {
-            do_action('publishpress_debug_log', '[async-notifications]: initializing');
-
             add_filter('publishpress_notif_workflow_run_action', [$this, 'filter_workflow_run_action'], 10, 3);
 
             add_action('publishpress_notif_queue', [$this, 'action_notif_queue'], 10, 5);
@@ -159,6 +158,22 @@ if (!class_exists('PP_Async_Notifications'))
          */
         public function action_notif_queue($workflow_post, $action_args, $receiver, $content, $channel)
         {
+            if (!is_array($receiver)) {
+                $receiver = [$receiver];
+            }
+
+            /*
+             * Debug.
+             */
+            $this->log(
+                'action_notif_queue: enqueuing notification (%s, %s, %s)',
+                [
+                    $workflow_post->ID,
+                    count($receiver),
+                    $channel,
+                ]
+            );
+
             $queue = $this->get_service('notification_queue');
 
             $queue->enqueueNotification($workflow_post, $action_args, $receiver, $content, $channel);
@@ -187,6 +202,20 @@ if (!class_exists('PP_Async_Notifications'))
 
             // Decode the content
             $content = base64_decode(maybe_unserialize($content));
+
+            /*
+             * Debug.
+             */
+            $this->log(
+                'action_cron_notify: doing action publishpress_notif_send_notification_ (%s, %s, %s, %s, %s)',
+                [
+                    $action,
+                    $postId,
+                    $oldStatus,
+                    $newStatus,
+                    maybe_serialize($receiver),
+                ]
+            );
 
             /**
              * Triggers the notification. This can be caught by notification channels.

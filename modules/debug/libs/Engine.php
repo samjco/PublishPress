@@ -53,6 +53,11 @@ class Engine
     protected $initialized = false;
 
     /**
+     * @var string
+     */
+    protected $debugSessionId;
+
+    /**
      * Engine constructor.
      *
      * @param string $logPath
@@ -99,15 +104,25 @@ class Engine
             return;
         }
 
+        $this->debugSessionId = strtoupper(substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyz", 5)), 0, 5));
+
         add_action('publishpress_debug_log', [$this, 'addLog'], 1, 2);
 
-        do_action('publishpress_debug_log', '##### Debug engine started #####');
-        do_action('publishpress_debug_log', 'REQUEST_URI: ' . $_SERVER['REQUEST_URI']);
+        do_action('publishpress_debug_log', '##### Debug session started: ' . $_SERVER['REQUEST_URI']);
 
-        if (function_exists('get_current_user_id')) {
-            $user  = get_user_by('ID', get_current_user_id());
+        if (function_exists('wp_get_current_user')) {
+            $user  = wp_get_current_user();
             $roles = implode(', ', $user->roles);
-            do_action('publishpress_debug_log', 'USER: %s, %s, roles: %s', [$user->ID, $user->user_login, $roles]);
+
+            do_action(
+                'publishpress_debug_log',
+                '##### User: %s, %s, roles: %s',
+                [
+                    $user->ID,
+                    $user->user_login,
+                    $roles
+                ]
+            );
         }
 
         $this->initialized = true;
@@ -132,8 +147,9 @@ class Engine
             $ms  = round($ms * 1000);
 
             $log = sprintf(
-                "\n[%s] %s ms  -  %s",
-                date('Y-m-d H:m:s'),
+                "\n[%s-%s] %s ms  -  %s",
+                $this->debugSessionId,
+                date('Y-m-d-H:m:s'),
                 $ms,
                 $log
             );

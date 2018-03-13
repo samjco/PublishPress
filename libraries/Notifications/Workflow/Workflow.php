@@ -9,13 +9,12 @@
 
 namespace PublishPress\Notifications\Workflow;
 
-use PublishPress\Notifications\Traits\Dependency_Injector;
-use WP_Post;
+use
+use PublishPress\Debug\DebuggerTrait;
 
 class Workflow
 {
-
-    use Dependency_Injector;
+    use Dependency_Injector, DebuggerTrait;
 
     /**
      * The post of this workflow.
@@ -51,6 +50,17 @@ class Workflow
      */
     public function run($args)
     {
+        /*
+         * Debug.
+         */
+        $this->log(
+            'run (%s)',
+            [
+                $this->workflow_post->ID,
+            ]
+        );
+
+
         $this->action_args = $args;
 
         // Who will receive the notification?
@@ -59,6 +69,16 @@ class Workflow
         // If we don't have receivers, abort the workflow.
         if (empty($receivers))
         {
+            /*
+             * Debug.
+             */
+            $this->log(
+                'run: no receivers found (%s)',
+                [
+                    $this->workflow_post->ID,
+                ]
+            );
+
             return;
         }
 
@@ -84,6 +104,18 @@ class Workflow
                  * @param string   $channel
                  */
                 $action = apply_filters('publishpress_notif_workflow_run_action', 'publishpress_notif_send_notification_' . $channel, $this, $channel);
+
+                /*
+                 * Debug.
+                 */
+                $this->log(
+                    'run: doing action ' . $action . ' (%s, %s, %s)',
+                    [
+                        $action,
+                        $this->workflow_post->ID,
+                        $channel,
+                    ]
+                );
 
                 /**
                  * Triggers the notification. This can be caught by notification channels.
