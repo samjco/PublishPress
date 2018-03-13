@@ -1,0 +1,7 @@
+{% if content %}
+    <textarea>{{ content }}</textarea>
+{% endif %}
+
+{% if not content %}
+    <p>{{ labels.noContent }}</p>
+{% endif %}

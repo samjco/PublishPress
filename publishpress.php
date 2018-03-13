@@ -42,6 +42,11 @@
 use PublishPress\Notifications\Traits\Dependency_Injector;
 use PublishPress\Notifications\Traits\PublishPress_Module;
 
+// Store the time the plugin started.
+if (!defined('PUBLISHPRESS_DEBUG_START_TIME')) {
+    define('PUBLISHPRESS_DEBUG_START_TIME', microtime(true));
+}
+
 require_once 'includes.php';
 
 // Core class
@@ -59,9 +64,30 @@ class publishpress
 
     public $options_group_name = 'publishpress_options';
 
+    /**
+     * @var PublishPress\Debug\Engine
+     */
+    protected $debugger;
+
     private function __construct()
     {
         /** Do nothing */
+    }
+
+    /**
+     * @param \PublishPress\Debug\Engine $debugger
+     */
+    public function setDebugger(PublishPress\Debug\Engine $debugger)
+    {
+        $this->debugger = $debugger;
+    }
+
+    /**
+     * @return \PublishPress\Debug\Engine
+     */
+    public function getDebugger()
+    {
+        return $this->debugger;
     }
 
     /**
@@ -70,7 +96,7 @@ class publishpress
      * Insures that only one instance of PublishPress exists in memory at any one
      * time. Also prevents needing to define globals all over the place.
      *
-     * @return The one true PublishPress
+     * @return publishpress one true PublishPress
      */
     public static function instance()
     {
@@ -82,6 +108,13 @@ class publishpress
             // Backwards compat for when we promoted use of the $publishpress global
             global $publishpress;
             $publishpress = self::$instance;
+
+            // Start the debugger. If not disabled, it won't register anything.
+            $logPath = apply_filters('publishpress_debug_log_path', get_temp_dir() . '/publishpress.debug.log');
+            $debugger = new PublishPress\Debug\Engine($logPath,PUBLISHPRESS_DEBUG_START_TIME);
+            $debugger->init();
+
+            $publishpress->setDebugger($debugger);
         }
 
         return self::$instance;
@@ -227,6 +260,7 @@ class publishpress
         // Scan the modules directory and include any modules that exist there
         // $module_dirs = scandir(PUBLISHPRESS_BASE_PATH . '/modules/');
         $default_module_dirs = array(
+            'debug'                  => PUBLISHPRESS_BASE_PATH,
             'modules-settings'       => PUBLISHPRESS_BASE_PATH,
             'calendar'               => PUBLISHPRESS_BASE_PATH,
             'editorial-metadata'     => PUBLISHPRESS_BASE_PATH,

@@ -104,6 +104,8 @@ if (!class_exists('PP_Async_Notifications'))
          */
         public function init()
         {
+            do_action('publishpress_debug_log', '[async-notifications]: initializing');
+
             add_filter('publishpress_notif_workflow_run_action', [$this, 'filter_workflow_run_action'], 10, 3);
 
             add_action('publishpress_notif_queue', [$this, 'action_notif_queue'], 10, 5);

@@ -158,8 +158,7 @@ if (!class_exists('PP_Modules_Settings'))
                 {
                     $mod_data = $publishpress->$slug->module;
 
-                    if ($mod_data->autoload
-                        || $mod_data->slug === $this->module->slug
+                    if ($mod_data->slug === $this->module->slug
                         || !isset($mod_data->general_options)
                         || $mod_data->options->enabled != 'on')
                     {

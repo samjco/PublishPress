@@ -149,6 +149,8 @@ if (!class_exists('PP_Improved_Notifications'))
          */
         public function init()
         {
+            do_action('publishpress_debug_log', '[improved-notifications]: initializing');
+
             add_action('admin_enqueue_scripts', array($this, 'add_admin_scripts'));
 
             // Workflow form

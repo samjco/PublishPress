@@ -46,6 +46,7 @@ if (!defined('PP_LOADED')) {
     define('PUBLISHPRESS_URL', plugins_url('/', __FILE__));
     define('PUBLISHPRESS_SETTINGS_PAGE', $settingsPage);
     define('PUBLISHPRESS_LIBRARIES_PATH', PUBLISHPRESS_BASE_PATH . '/libraries');
+    define('PUBLISHPRESS_MODULES_PATH', PUBLISHPRESS_BASE_PATH . '/modules');
 
     /**
      * Use PUBLISHPRESS_BASE_PATH instead.
@@ -72,6 +73,7 @@ if (!defined('PP_LOADED')) {
     // Register the library
     Auto_loader::register('\\PublishPress\\Legacy\\', PUBLISHPRESS_LIBRARIES_PATH . '/Legacy');
     Auto_loader::register('\\PublishPress\\Notifications\\', PUBLISHPRESS_LIBRARIES_PATH . '/Notifications');
+    Auto_loader::register('\\PublishPress\\Debug\\', PUBLISHPRESS_MODULES_PATH . '/debug/libs');
 
     require_once PUBLISHPRESS_BASE_PATH . '/deprecated.php';
 

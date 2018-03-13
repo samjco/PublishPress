@@ -135,6 +135,8 @@ if (!class_exists('PP_User_Groups'))
             // Javascript and CSS if we need it
             add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
             add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
+
+            do_action('publishpress_debug_log', '[user-groups]: initializing (deprecated... should not be called)');
         }
 
         /**

@@ -95,6 +95,7 @@ if (!class_exists('PP_Notifications'))
          */
         public function init()
         {
+            do_action('publishpress_debug_log', '[notifications]: initializing');
 
             // Register our taxonomies for managing relationships
             $this->register_taxonomies();

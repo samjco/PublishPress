@@ -32,5 +32,8 @@ namespace PublishPress\Core\Modules;
 
 interface ModuleInterface
 {
-
+    /**
+     * Initialize the module. Conditionally loads if the module is enabled.
+     */
+    public function init();
 }
