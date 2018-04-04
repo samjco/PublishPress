@@ -21,7 +21,6 @@
        "PublishPress\\Core\\": "core/"
      }
   },
-  "minimum-stability": "stable",
   "require": {
     "php": ">= 5.3",
     "twig/twig": "~1.0",
@@ -31,5 +30,14 @@
   "require-dev": {
     "gettext/gettext": "^4.2",
     "codeception/codeception": "^2.3"
-  }
+  },
+  "scripts": {
+    "test": "./vendor/bin/codecept run --no-interaction"
+  },
+  "config": {
+    "preferred-install": "dist",
+    "optimize-autoloader": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

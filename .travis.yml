@@ -1,20 +1,30 @@
+# Config file for https://travis-ci.org/
+#
 # Based on https://github.com/wp-cli/sample-plugin/blob/master/.travis.yml
+#   and https://github.com/ankurk91/codeception-travis-ci-example/blob/master/.travis.yml
+#
+# Validate this file here - http://lint.travis-ci.org/
 
 sudo: false
 language: php
 
+dist: trusty
+os:
+  - linux
+
 services:
   - mysql
 
-cache:
-  directories:
-    - vendor
-    - $HOME/.composer/cache
+addons:
+  apt:
+    packages:
+      - google-chrome-stable
 
-install:
-  - composer install --no-dev --prefer-dist
+git:
+  depth: 1
 
 matrix:
+  fast_finish: true
   include:
     - php: '7.1'
       env: WP_VERSION=latest
@@ -29,35 +39,42 @@ matrix:
     - php: '5.4'
       env: WP_VERSION=4.8
 
+before_install: phpenv config-rm xdebug.ini
+
+install:
+  - composer install --no-dev --prefer-dist --no-interaction
+
 before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+
+  - echo "Download selenium-server-standalone jar file"
+  - wget -c -nc --retry-connrefused --tries=0 https://goo.gl/s4o9Vx -O selenium-server-standalone.jar
+
+  - echo "Download chrome driver and unzip it"
+  - wget -c -nc --retry-connrefused --tries=0 http://chromedriver.storage.googleapis.com/2.31/chromedriver_linux64.zip
+  - unzip -o -q chromedriver_linux64.zip
+
+  - echo "Run selenium server - background process"
+  - nohup bash -c "java -jar selenium-server-standalone.jar &" && sleep 1; cat nohup.out
+  - ls -al
+
+  - echo "Run php in-built server - background process"
+  - nohup bash -c "php -S localhost:8000 2>&1 -t app &" && sleep 1; cat nohup.out
+
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - |
-    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
-      phpenv config-rm xdebug.ini
-    else
-      echo "xdebug.ini does not exist"
-    fi
-  - |
-    if [[ ! -z "$WP_VERSION" ]] ; then
-      bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
-      composer global require "phpunit/phpunit=4.8.*|5.7.*"
-    fi
-  - |
-    if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
-      composer global require wp-coding-standards/wpcs
-      phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
-    fi
 
 script:
-  - |
-    if [[ ! -z "$WP_VERSION" ]] ; then
-      phpunit
-      WP_MULTISITE=1 phpunit
-    fi
-  - |
-    if [[ "$WP_TRAVISCI" == "phpcs" ]] ; then
-      phpcs
-    fi
+  - composer test
+
+branches:
+  only: test-ci
+
+cache:
+  directories:
+    - vendor
+    - $HOME/.composer/cache
 
 notifications:
   slack:
