@@ -395,6 +395,55 @@ class Shortcodes
                     $info[]     = htmlspecialchars_decode(admin_url($admin_path));
                     break;
 
+                case 'sender_display_name':
+                case 'sender_email':
+                case 'sender_login':
+                case 'sender_first_name':
+                case 'sender_last_name':
+
+
+			$current_user = wp_get_current_user();
+
+			/*
+			* @example Safe usage: $current_user = wp_get_current_user();
+			* if ( ! ( $current_user instanceof WP_User ) ) {
+			*     return;
+			* }
+			*/
+			if ( $current_user ) {
+
+			$s_field_map = [
+			'sender_display_name' => 'display_name',
+			'sender_email'        => 'user_email',
+			'sender_login'        => 'user_login',
+			'sender_first_name'   => 'user_firstname',
+			'sender_last_name'    => 'user_lastname',
+			];
+
+			$s_user_field  = $s_field_map[$item];
+			$data          = $current_user->{$s_user_field};
+
+			}else{
+
+			$admin_user = get_option();
+			$s_field_map = [
+			'sender_display_name' => 'blogname',
+			'sender_email'        => 'admin_email',
+			'sender_login'        => 'blogname',
+			'sender_first_name'   => 'blogname',
+			'sender_last_name'    => 'blogname',
+			];
+
+		$s_user_field  = $s_field_map[$item];
+		$data          = $admin_user->{$s_user_field};
+
+		}
+
+		$info[] = apply_filters('pp_get_sender_data', $data, $item);
+		break;			    
+			    
+			    
+			   		    
                 case 'author_display_name':
                 case 'author_email':
                 case 'author_login':
